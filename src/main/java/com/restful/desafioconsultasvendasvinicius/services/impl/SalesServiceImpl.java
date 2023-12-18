@@ -1,24 +1,86 @@
 package com.restful.desafioconsultasvendasvinicius.services.impl;
 
 import com.restful.desafioconsultasvendasvinicius.dto.SaleMinDTO;
+import com.restful.desafioconsultasvendasvinicius.entities.Sale;
 import com.restful.desafioconsultasvendasvinicius.repositories.SaleRepository;
+import com.restful.desafioconsultasvendasvinicius.repositories.SellerRepository;
 import com.restful.desafioconsultasvendasvinicius.services.SaleService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Service
 public class SalesServiceImpl implements SaleService {
-    private final SaleRepository repository;
-
-    public SalesServiceImpl(SaleRepository repository) {
-        this.repository = repository;
+    
+    private final SaleRepository saleRepository;
+    
+    public SalesServiceImpl(SaleRepository saleRepository) {
+        this.saleRepository = saleRepository;
     }
 
     @Override
     public SaleMinDTO findSaleById(Long id) {
-        return repository.findById(id)
+        return saleRepository.findById(id)
                 .map(sale -> new SaleMinDTO(sale.getId(), sale.getAmount(), sale.getDate()))
                 .orElseThrow(() -> new EntityNotFoundException("Sale not found with ID: " + id));
+    }
+
+    @Override
+    public List<SaleMinDTO> findSalesReport(String startDate, String endDate, String sellerName) {
+        // Tratamento das datas
+        LocalDate start = startDate != null ? LocalDate.parse(startDate) : LocalDate.now().minusYears(1L);
+        LocalDate end = endDate != null ? LocalDate.parse(endDate) : LocalDate.now();
+
+        // Tratamento do nome do vendedor
+        String name = sellerName != null ? sellerName : "";
+
+        // Chama o método do repository para buscar as vendas
+        List<Sale> sales = saleRepository.findSalesReport(start, end, name);
+
+        // Converte a lista de vendas para uma lista de DTOs
+        return sales.stream()
+                .map(sale -> new SaleMinDTO(sale.getId(), sale.getAmount(), sale.getDate()))
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    public List<SaleMinDTO> findSalesSummary(String startDate, String endDate) {
+        LocalDate start;
+        LocalDate end;
+
+        if (endDate == null) 
+            end = LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault());
+        else 
+            end = LocalDate.parse(endDate);
+        
+        if (startDate == null) 
+            start = end.minusYears(1L);
+        else 
+            start = LocalDate.parse(startDate);
+        
+        List<Sale> sales = saleRepository.findAllByDateBetweenOrderByDateDesc(start, end);
+
+ 
+        Map<String, Double> salesSummary = getSummary(start, end); 
+        return salesSummary.entrySet().stream()
+                .map(entry -> new SaleMinDTO(entry.getKey(), entry.getValue())) 
+                .collect(Collectors.toList());
+    }
+
+    public Map<String, Double> getSummary(LocalDate startDate, LocalDate endDate) {
+        List<Object[]> summaryList = saleRepository.getSalesSummary(startDate, endDate);
+
+        return summaryList.stream()
+                .collect(Collectors.toMap(
+                        array -> (String) array[0], // Seller name
+                        array -> (Double) array[1] // Total sales amount
+                ));
     }
 
     /*
@@ -47,5 +109,4 @@ public class SalesServiceImpl implements SaleService {
         * Dica: receba todos os dados como String no controller, e faça os tratamentos das datas acima,
         instanciando os objetos LocalDate, no service.
     */
- 
 }

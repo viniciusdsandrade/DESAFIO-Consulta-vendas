@@ -61,14 +61,19 @@ public class Sale {
 
     @Override
     public int hashCode() {
-        return Objects.hash(
-                this.getId(),
-                this.getVisited(),
-                this.getDeals(),
-                this.getAmount(),
-                this.getDate(),
-                this.getSeller()
-        );
+        final int prime = 31;
+        int hash = 1;
+
+        hash *= prime + ((this.id == null) ? 0 : this.id.hashCode());
+        hash *= prime + ((this.visited == null) ? 0 : this.visited.hashCode());
+        hash *= prime + ((this.deals == null) ? 0 : this.deals.hashCode());
+        hash *= prime + ((this.amount == null) ? 0 : this.amount.hashCode());
+        hash *= prime + ((this.date == null) ? 0 : this.date.hashCode());
+
+        if (hash < 0)
+            hash *= -1;
+
+        return hash;
     }
 
     //Construtor de Cópia

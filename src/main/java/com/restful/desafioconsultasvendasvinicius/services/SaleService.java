@@ -2,8 +2,18 @@ package com.restful.desafioconsultasvendasvinicius.services;
 
 import com.restful.desafioconsultasvendasvinicius.dto.SaleMinDTO;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+
 public interface SaleService {
     SaleMinDTO findSaleById(Long id);
+
+    List<SaleMinDTO> findSalesReport(String startDate, String endDate, String sellerName);
+
+    Map<String, Double> getSummary(LocalDate startDate, LocalDate endDate);
+
+    List<SaleMinDTO> findSalesSummary(String startDate, String endDate);
     
     /*
     Relatório de vendas

@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SaleMinDTO {
 
-    private  String sellerName;
+    private String sellerName;
     private Long id;
 
     @NotNull(message = "Amount is required")
@@ -44,6 +44,11 @@ public class SaleMinDTO {
         this.date = date;
     }
 
+    public SaleMinDTO(String key, Double value) {
+        this.sellerName = key;
+        this.amount = value;
+    }
+
     @Override
     public boolean equals(Object o) {
 
@@ -60,10 +65,16 @@ public class SaleMinDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(
-                this.getId(),
-                this.getAmount(),
-                this.getDate()
-        );
+        final int prime = 31;
+        int hash = 1;
+
+        hash *= prime + ((this.id == null) ? 0 : this.id.hashCode());
+        hash *= prime + ((this.amount == null) ? 0 : this.amount.hashCode());
+        hash *= prime + ((this.date == null) ? 0 : this.date.hashCode());
+
+        if (hash < 0)
+            hash *= -1;
+
+        return hash;
     }
 }

@@ -2,23 +2,27 @@ package com.restful.desafioconsultasvendasvinicius.controllers;
 
 import com.restful.desafioconsultasvendasvinicius.dto.SaleMinDTO;
 import com.restful.desafioconsultasvendasvinicius.services.SaleService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/sales")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class SaleController {
 
-    private final SaleService service;
+    private final SaleService saleService;
 
-    public SaleController(SaleService service) {
-        this.service = service;
+    public SaleController(SaleService saleService) {
+        this.saleService = saleService;
     }
 
     @GetMapping(value = "/{id}")
     public ResponseEntity<SaleMinDTO> findById(@PathVariable Long id) {
-        SaleMinDTO dto = service.findSaleById(id);
+        SaleMinDTO dto = saleService.findSaleById(id);
         return ResponseEntity.ok(dto);
     }
     
@@ -50,12 +54,18 @@ public class SaleController {
     */
 
     @GetMapping(value = "/report")
-    public ResponseEntity<?> getReport() {
-        // TODO
-        return null;
+    public ResponseEntity<List<SaleMinDTO>> getReport(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String sellerName) {
+
+        // Tratamento das datas e chamada do serviço
+        List<SaleMinDTO> report = saleService.findSalesReport(startDate, endDate, sellerName);
+
+        // Retorna a resposta
+        return new ResponseEntity<>(report, HttpStatus.OK);
     }
-
-
+    
     /*
     Sumário de vendas por vendedor
     1. [IN] O usuário informa, opcionalmente:
@@ -70,8 +80,14 @@ public class SaleController {
         * As mesmas do caso de uso Relatório de vendas
     */
     @GetMapping(value = "/summary")
-    public ResponseEntity<?> getSummary() {
-        // TODO
-        return null;
+    public ResponseEntity<List<SaleMinDTO>> getSummary(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+
+        // Tratamento das datas e chamada do serviço
+        List<SaleMinDTO> summary =  saleService.findSalesSummary(startDate, endDate);
+
+        // Retorna a resposta
+        return new ResponseEntity<>(summary, HttpStatus.OK);
     }
 }
