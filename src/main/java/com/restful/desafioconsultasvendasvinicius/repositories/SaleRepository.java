@@ -1,6 +1,7 @@
 package com.restful.desafioconsultasvendasvinicius.repositories;
 
 
+import com.restful.desafioconsultasvendasvinicius.dto.SalesReportDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.restful.desafioconsultasvendasvinicius.entities.Sale;
 import org.springframework.data.jpa.repository.Query;
@@ -13,24 +14,40 @@ import java.util.List;
 @Repository
 public interface SaleRepository extends JpaRepository<Sale, Long> {
 
-    @Query("SELECT s FROM Sale s " +
-            "WHERE (:start IS NULL OR s.date >= :start) " +
-            "AND (:end IS NULL OR s.date <= :end) " +
-            "AND (:name IS NULL OR s.seller.name LIKE %:name%)")
-    List<Sale> findSalesReport(@Param("start") LocalDate start,
-                               @Param("end") LocalDate end,
-                               @Param("name") String name);
+    @Query("SELECT new com.restful.desafioconsultasvendasvinicius.dto.SalesReportDTO(s.id, s.date, s.amount, s.seller.name) " +
+            "FROM Sale s " +
+            "WHERE (:minDate IS NULL OR s.date >= :minDate) " +
+            "AND (:maxDate IS NULL OR s.date <= :maxDate) " +
+            "AND (LOWER(s.seller.name) LIKE LOWER(CONCAT('%', :name, '%')))")
+    List<SalesReportDTO> findSalesReport(
+            @Param("minDate") LocalDate minDate,
+            @Param("maxDate") LocalDate maxDate,
+            @Param("name") String name);
 
     @Query("SELECT s.seller.name, SUM(s.amount) FROM Sale s " +
             "WHERE (:startDate IS NULL OR s.date >= :startDate) " +
             "AND (:endDate IS NULL OR s.date <= :endDate) " +
             "GROUP BY s.seller.name")
     List<Object[]> getSalesSummary(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
-    
+
     @Query("SELECT s FROM Sale s WHERE s.date BETWEEN :start AND :end ORDER BY s.date DESC")
     List<Sale> findAllByDateBetweenOrderByDateDesc(LocalDate start, LocalDate end);
     
-    /*
+     /*
+    Sumário de vendas por vendedor
+    1. [IN] O usuário informa, opcionalmente:
+        1.1 - data inicial
+        1.2 - data final.
+        
+    2. [OUT] O sistema informa uma listagem contendo:  
+        2.1 - nome do vendedor
+        2.2 - soma de vendas deste vendedor no período informado.
+  
+    Informações complementares:
+        * As mesmas do caso de uso Relatório de vendas
+    */
+    
+      /*
     Relatório de vendas
     1. [IN] O usuário informa, opcionalmente:
         1.1 - data inicial, 

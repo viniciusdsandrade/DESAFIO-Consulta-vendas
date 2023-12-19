@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -57,7 +56,8 @@ public class SaleController {
     public ResponseEntity<List<SaleMinDTO>> getReport(
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
-            @RequestParam(required = false) String sellerName) {
+            @RequestParam(required = false) String sellerName
+    ) {
 
         // Tratamento das datas e chamada do serviço
         List<SaleMinDTO> report = saleService.findSalesReport(startDate, endDate, sellerName);
@@ -65,7 +65,7 @@ public class SaleController {
         // Retorna a resposta
         return new ResponseEntity<>(report, HttpStatus.OK);
     }
-    
+
     /*
     Sumário de vendas por vendedor
     1. [IN] O usuário informa, opcionalmente:
@@ -85,7 +85,7 @@ public class SaleController {
             @RequestParam(required = false) String endDate) {
 
         // Tratamento das datas e chamada do serviço
-        List<SaleMinDTO> summary =  saleService.findSalesSummary(startDate, endDate);
+        List<SaleMinDTO> summary = saleService.findSalesSummary(startDate, endDate);
 
         // Retorna a resposta
         return new ResponseEntity<>(summary, HttpStatus.OK);
